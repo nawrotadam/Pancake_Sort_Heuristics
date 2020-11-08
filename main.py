@@ -72,42 +72,59 @@ def writeFile(filename, inputData, solution, workTime):
     file.close()
 
 
+# def temp():
+#     # find first element bigger than previous and save its index
+#     splitIndex = 0
+#     biggest =
+#     # todo zmienna zapisujaca najwieksza liczbe i jej index
+#     for i in range(1, len(pancakes)):
+#         if pancakes[i] > pancakes[i - 1]:
+#             splitIndex = i - 1
+#             break  # todo ten break wyleci
+#
+#     # print("splitIndex: " + str(splitIndex))
+#     unsorted = pancakes[splitIndex:]  # unsorted table
+#     indexMax = np.argmax(unsorted) + len(pancakes[0:splitIndex])  # index of biggest pancake
+#
+#     if estimateQuality(pancakes[:splitIndex] + unsorted) == 0:
+#         return pancakes[:splitIndex] + unsorted
+#
+#     # move biggest pancake to the right of the sorted pancakes
+#     np.flip(unsorted[indexMax:])
+#     np.flip(unsorted[splitIndex:])
+#
+#     pancakes = pancakes[:splitIndex] + unsorted  # concatenate final pancakes table
+
 def bruteForce(pancakes):
+    unsorted = pancakes.copy()
+    sortedNumber = 0
+    quality = estimateQuality(pancakes)
+    while quality != 0:
+        if sortedNumber == len(pancakes):  # TODO przy gotowym algorytmie to bedzie do wywalenia
+            pancakes.reverse()
+            return pancakes
+        else:
+            indexMax = np.argmax(pancakes[sortedNumber:])
 
+        if indexMax == 0:
+            unsorted.reverse()
+        else:
+            unsorted[:indexMax].append(unsorted[indexMax:].reverse())
 
+        unsorted.reverse()
 
+        if sortedNumber == 0:
+            pancakes = unsorted.copy()
+        else:
+            pancakes = pancakes[:sortedNumber]
+            pancakes.extend(unsorted)
 
-    # find first element bigger than previous and save its index
-    splitIndex = 0
-    for i in range(1, len(pancakes)):
-        if pancakes[i] > pancakes[i-1]:
-            splitIndex = i-1
-            break
+        del(unsorted[0])
 
-    # print("splitIndex: " + str(splitIndex))
-    unsorted = pancakes[splitIndex:]  # unsorted table
-    indexMax = np.argmax(unsorted) + len(pancakes[0:splitIndex])  # index of biggest pancake
+        sortedNumber += 1
+        quality = estimateQuality(pancakes)
 
-    print("pancakes: ", end="")
-    print(pancakes)
-    print("splitIndex: " + str(splitIndex))
-    print("index max: " + str(indexMax))
-    print("unsorted: ", end="")
-    for el in unsorted:
-        print(str(el) + ", ", end="")
-    print("\n")
-
-
-    # move biggest pancake to the right of the sorted pancakes
-    np.flip(unsorted[indexMax:])
-    if estimateQuality(pancakes[:splitIndex] + unsorted) == 0:
-        return pancakes[:splitIndex] + unsorted
-    else:
-        np.flip(unsorted[splitIndex:])
-
-    pancakes = pancakes[:splitIndex] + unsorted  # concatenate final pancakes table
-    print("pancakes: ", end="")
-    print(pancakes)
+    pancakes.reverse()
     return pancakes
 
 
@@ -120,15 +137,12 @@ def main():
         fileOutput = sys.argv[2]
 
     # TODO DEBUG
-    startingPancakes = [5,3,4]
-    pancakes = [5,3,4]
+    startingPancakes = [5,3,2,4]
+    pancakes = [5,3,2,4]
 
     startTime = time.time()
-    quality = estimateQuality(pancakes)
-    while quality != 0:
-        # pancakes = generateRandomSolution(pancakes)
-        pancakes = bruteForce(pancakes)
-        quality = estimateQuality(pancakes)
+    # pancakes = generateRandomSolution(pancakes)
+    pancakes = bruteForce(pancakes)
 
     workTime = round(time.time() - startTime, 6)  # work time of alghoritm, rounded to 6 decimal places
     printSolution(pancakes)
