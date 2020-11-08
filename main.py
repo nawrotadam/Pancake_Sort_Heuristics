@@ -4,7 +4,7 @@ import time
 import sys
 
 PANCAKES_MIN = 3
-PANCAKES_MAX = 9
+PANCAKES_MAX = 4
 
 
 def randomiseProblem():
@@ -28,7 +28,7 @@ def estimateQuality(pancakes):
 
 
 # it takes pancakes portion and reverse it
-def generateSolution(pancakes):
+def generateRandomSolution(pancakes):
     swapPosition = random.randrange(0, len(pancakes))  # randomise place where you start to reverse
     pancakes[swapPosition:len(pancakes)] = pancakes[swapPosition:len(pancakes)][::-1]  # reverses part of list in place
     return pancakes
@@ -72,42 +72,68 @@ def writeFile(filename, inputData, solution, workTime):
     file.close()
 
 
-# def flip(pancakes, n):
-#     temp, start = 0
-#     while start < n:
-#         temp = pancakes[start]
-#         pancakes[start] = pancakes[n]
-#         pancakes[n] = temp
-#         start += 1
-#         n -= 1
-#
-#
-# def pancakeSort(pancakes, n):
-#     for currSize in range(n, 1, -1):
-#         mi = max(pancakes, currSize)
-#
-#         if mi != currSize-1:
-#             flip(pancakes, mi)
-#             flip(pancakes, currSize-1)
+def bruteForce(pancakes):
+
+
+
+
+    # find first element bigger than previous and save its index
+    splitIndex = 0
+    for i in range(1, len(pancakes)):
+        if pancakes[i] > pancakes[i-1]:
+            splitIndex = i-1
+            break
+
+    # print("splitIndex: " + str(splitIndex))
+    unsorted = pancakes[splitIndex:]  # unsorted table
+    indexMax = np.argmax(unsorted) + len(pancakes[0:splitIndex])  # index of biggest pancake
+
+    print("pancakes: ", end="")
+    print(pancakes)
+    print("splitIndex: " + str(splitIndex))
+    print("index max: " + str(indexMax))
+    print("unsorted: ", end="")
+    for el in unsorted:
+        print(str(el) + ", ", end="")
+    print("\n")
+
+
+    # move biggest pancake to the right of the sorted pancakes
+    np.flip(unsorted[indexMax:])
+    if estimateQuality(pancakes[:splitIndex] + unsorted) == 0:
+        return pancakes[:splitIndex] + unsorted
+    else:
+        np.flip(unsorted[splitIndex:])
+
+    pancakes = pancakes[:splitIndex] + unsorted  # concatenate final pancakes table
+    print("pancakes: ", end="")
+    print(pancakes)
+    return pancakes
 
 
 def main():
-    startingPancakes = randomiseProblem()  # copy of clean input data to save them to file at the end
-    pancakes = list.copy(startingPancakes)
+    # startingPancakes = randomiseProblem()  # copy of clean input data to save them to file at the end
+    # pancakes = list.copy(startingPancakes)
     fileOutput = "output.txt"
     if len(sys.argv) >= 2:  # if aditional terminal parameters are added, override default input/output
         pancakes = sys.argv[1]
         fileOutput = sys.argv[2]
 
+    # TODO DEBUG
+    startingPancakes = [5,3,4]
+    pancakes = [5,3,4]
+
     startTime = time.time()
     quality = estimateQuality(pancakes)
     while quality != 0:
-        pancakes = generateSolution(pancakes)
+        # pancakes = generateRandomSolution(pancakes)
+        pancakes = bruteForce(pancakes)
         quality = estimateQuality(pancakes)
 
     workTime = round(time.time() - startTime, 6)  # work time of alghoritm, rounded to 6 decimal places
     printSolution(pancakes)
     writeFile(fileOutput, startingPancakes, pancakes, workTime)
+
     return 0
 
 
