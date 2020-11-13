@@ -4,7 +4,7 @@ import time
 import sys
 
 PANCAKES_MIN = 3
-PANCAKES_MAX = 50
+PANCAKES_MAX = 5
 
 
 def randomiseProblem():
@@ -110,14 +110,39 @@ def climbingAlghoritm(pancakes):
     best_pancakes = pancakes
     best_quality = estimateQuality(best_pancakes)
     while best_quality != 0:
-        print(best_pancakes, end="")
-        print(" " + str(best_quality))
         new_pancakes = generateRandomSolution(best_pancakes)
         new_quality = estimateQuality(new_pancakes)
         if new_quality < best_quality:
             best_quality = new_quality
             best_pancakes = new_pancakes
     return best_pancakes
+
+
+def tabuAlghoritm(pancakes):
+    tabu_pancakes = pancakes
+    tabu_quality = estimateQuality(pancakes)
+    tabuArr = []
+    while tabu_quality != 0:
+        tabuArr.append(tabu_pancakes)
+        pancakes = tabu_pancakes
+        old_pancakes = pancakes
+        counter = 0
+        best_local_quality = 99  # indykator bledu
+        while counter <= len(pancakes):
+            pancakes = old_pancakes
+            reversePart = pancakes[counter:]
+            pancakes = pancakes[:counter]
+            reversePart.reverse()
+            pancakes.extend(reversePart)
+            if estimateQuality(pancakes) <= best_local_quality and not tabuArr.__contains__(pancakes):
+                best_local_quality = estimateQuality(pancakes)
+                best_local_pancakes = pancakes
+            counter += 1
+
+        tabu_quality = best_local_quality
+        tabu_pancakes = best_local_pancakes
+
+    return tabu_pancakes
 
 
 def main():
@@ -130,8 +155,9 @@ def main():
 
     startTime = time.time()
     # pancakes = generateRandomSolution(pancakes)
-    pancakes = bruteForce(pancakes)
+    # pancakes = bruteForce(pancakes)
     # pancakes = climbingAlghoritm(pancakes)
+    pancakes = tabuAlghoritm(pancakes)
 
     workTime = round(time.time() - startTime, 6)  # work time of alghoritm, rounded to 6 decimal places
     printSolution(pancakes)
