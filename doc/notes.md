@@ -1,6 +1,9 @@
 dane wejsciowe:
-    ilosc nalesnikow = n (unsigned int)
+    tablica niepowtarzalnych liczb(nalesnikow) o roznych wielkosciach = pancakes[]
     
 
 dane wyjsciowe:
-    liczba przelozen potrzebna do uporzadkowania stosu = k (unsigned int)
+    poukladana tablica liczb(nalesnikow) od największego do najmniejszego
+    czas wykonania algorytmu
+    ilosc obrotow potrzebna do posortowania tablicy liczb
+    sekwencja obrotow potrzebna do posortowania tablicy liczb
