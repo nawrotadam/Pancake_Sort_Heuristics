@@ -2,6 +2,7 @@ import random
 import numpy as np
 import time
 import sys
+import math
 
 PANCAKES_MIN = 3
 PANCAKES_MAX = 7
@@ -26,12 +27,14 @@ def randomiseProblem():
 
 def estimateQuality(pancakes):
     qualityMark = 0  # ideal solution
-    for i in range(0, len(pancakes)-1):
-        if pancakes[i+1] > pancakes[i]:
-            qualityMark += 1  # for every mistake increment number of mistakes
+    sortedPancakes = pancakes.copy()
+    sortedPancakes.sort()
+    sortedPancakes.reverse()
 
-    # print(pancakes)
-    # print(qualityMark)
+    for i in range(0, len(sortedPancakes)):
+        if pancakes[i] != sortedPancakes[i]:
+            qualityMark += 1
+
     return qualityMark
 
 
@@ -104,72 +107,135 @@ def bruteForce(pancakes):
     return sortedPancakes + unsorted
 
 
-def getAllNeighbours(pancakes):
-    neighbours = []
-    for i in range(0, len(pancakes)):
-        first_split = pancakes[0:i]  # part which is not reversed
-        second_split = pancakes[i:len(pancakes)]  # part prepared to reverse
-        second_split.reverse()
-        neighbours.append(first_split + second_split)
-
-    if neighbours.__contains__(pancakes):
-        neighbours.remove(pancakes)  # remove self cause you are not a neighbour
-    return neighbours
-
-
 def climbingAlghoritm(pancakes):
     number_of_flips = 0
     best_pancakes = pancakes.copy()
     best_quality = estimateQuality(best_pancakes)
+    pancakeSequence = []  # all flip sequences
+    best_sequence = None  # best sequence for neighbors
     while best_quality != 0:
         isBlocked = True
-        neighbours = getAllNeighbours(pancakes)
-        for el in neighbours:
+
+        for i in range(0, len(pancakes)):
+            first_split = pancakes[0:i]  # part which is not reversed
+            second_split = pancakes[i:len(pancakes)]  # part prepared to reverse
+            second_split.reverse()
+            el = first_split + second_split
+            if el == pancakes:  # remove self cause you are not a neighbors
+                continue
+
             if estimateQuality(el) < best_quality:
                 best_quality = estimateQuality(el)
                 best_pancakes = el.copy()
+                pancakes = best_pancakes.copy()
+                best_sequence = i
                 number_of_flips += 1
                 isBlocked = False
+
+        pancakeSequence.append(best_sequence)
 
         if isBlocked:  # we are in local max, can't move from there
             print("Blocade")
             print("flips: " + str(number_of_flips))
+            print("sequence:", end="")
+            print(pancakeSequence)
             return best_pancakes  # we can't move, return unsorted pancakes
     print("flips: " + str(number_of_flips))
+    print("sequence:", end="")
+    print(pancakeSequence)
     return best_pancakes  # it returns sorted pancakes here
 
 
 def tabuAlghoritm(pancakes):
+    # pancakes = [19, 4, 9, 18, 8, 14]  # prove that it works
     number_of_flips = 0
     tabu_pancakes = pancakes.copy()
     tabu_quality = estimateQuality(pancakes)
     tabuArr = [pancakes]
-    while tabu_quality != 0:
-        best_neighbour = []
-        best_neighbour_quality = len(pancakes)  # indykator bledu, zawsze najgorsza mozliwa opcja
-        neighbours = getAllNeighbours(tabu_pancakes)
-        isBlocked = True
+    pancakeSequence = []  # all flip sequences
+    best_sequence = None  # best sequence for neighbor
 
-        for el in neighbours:
-            if estimateQuality(el) < best_neighbour_quality and not tabuArr.__contains__(el):
-                best_neighbour_quality = estimateQuality(el)
-                best_neighbour = el.copy()
+    while tabu_quality != 0:
+        isBlocked = True
+        best_neighbor = []
+        best_neighbor_quality = len(pancakes)  # indykator bledu, zawsze najgorsza mozliwa opcja
+
+        for i in range(0, len(tabu_pancakes)):
+            first_split = tabu_pancakes[0:i]  # part which is not reversed
+            second_split = tabu_pancakes[i:len(tabu_pancakes)]  # part prepared to reverse
+            second_split.reverse()
+            el = first_split + second_split
+
+            if el == tabu_pancakes:  # remove self cause you are not a neighbor
+                continue
+
+            if estimateQuality(el) < best_neighbor_quality and not tabuArr.__contains__(el):
+                best_neighbor_quality = estimateQuality(el)
+                best_neighbor = el.copy()
+                best_sequence = i
                 number_of_flips += 1
                 isBlocked = False
+
+        pancakeSequence.append(best_sequence)
 
         if isBlocked:  # if you cannot move
             print("Blocade")
             print("flips: " + str(number_of_flips))
+            print("sequence:", end="")
+            print(pancakeSequence)
             return tabu_pancakes
 
-        tabu_pancakes = best_neighbour.copy()
+        tabu_pancakes = best_neighbor.copy()
         tabuArr.append(tabu_pancakes)
-        tabu_quality = best_neighbour_quality
+        tabu_quality = best_neighbor_quality
 
     print("flips: " + str(number_of_flips))
+    print("sequence:", end="")
+    print(pancakeSequence)
     return tabu_pancakes
 
+
 def statistics(name, size, time, flips, score):
+    print()
+
+
+def getAllNeighbors(pancakes):
+    neighbors = []
+    for i in range(0, len(pancakes)):
+        first_split = pancakes[0:i]  # part which is not reversed
+        second_split = pancakes[i:len(pancakes)]  # part prepared to reverse
+        second_split.reverse()
+        neighbors.append(first_split + second_split)
+
+    if neighbors.__contains__(pancakes):
+        neighbors.remove(pancakes)  # remove self cause you are not a neighbor
+    return neighbors
+
+
+def simmannealing(pancakes):
+    initial_temp = 90
+    final_temp = .1
+    alpha = 0.01
+    current_temp = initial_temp
+    current_state = pancakes.copy()
+
+    while current_temp > final_temp:
+        neighbor = random.choice(getAllNeighbors(current_state))
+        cost_diff = estimateQuality(current_state) - estimateQuality(neighbor)
+
+        if estimateQuality(current_state) == 0:
+            return current_state
+
+        if cost_diff > 0:
+            current_state = neighbor.copy()
+        elif random.uniform(0, 1) < math.exp(cost_diff / current_temp):
+            current_state = neighbor.copy()
+        current_temp -= alpha
+
+    return current_state
+
+
+def geneticAlghoritm():
     print()
 
 
@@ -184,9 +250,10 @@ def main():
     startTime = time.time()
     # pancakes = randomiseSolution(pancakes)
     printSolution(pancakes)
-    pancakes = bruteForce(pancakes)
+    # pancakes = bruteForce(pancakes)
     # pancakes = climbingAlghoritm(pancakes)
     # pancakes = tabuAlghoritm(pancakes)
+    pancakes = simmannealing(pancakes)
     workTime = round(time.time() - startTime, 6)  # work time of alghoritm, rounded to 6 decimal places
     printSolution(pancakes)
     writeFile(fileOutput, startingPancakes, pancakes, workTime)
