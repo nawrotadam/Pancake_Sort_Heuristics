@@ -7,23 +7,14 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 
-PANCAKES_MIN = 10
-PANCAKES_MAX = 11
-
+PANCAKES_MIN = 9
+PANCAKES_MAX = 10
 
 # randomise starting problem
 def randomiseProblem():
     quantity = random.randrange(PANCAKES_MIN, PANCAKES_MAX)
     pancakesArr = []
     for i in range(1, quantity + 1):
-        # randomSize = random.randrange(1, 30)
-        # if not pancakesArr.__contains__(randomSize):
-        #     pancakesArr.append(randomSize)
-        # else:
-        #     if i == 0:
-        #         i = 0
-        #     else:
-        #         i = i - 1
         pancakesArr.append(i)
 
     random.shuffle(pancakesArr)
@@ -56,7 +47,7 @@ def estimateGeneticQuality(pancakes, pancake_sequence):
             qualityMark += 1
 
     # we prefer shorter sequences so we subtract from quality mark 1/length of sequence table
-    qualityMark -= 1 / len(pancake_sequence)
+    qualityMark -= 1 / len(pancake_sequence)  # TODO -
 
     return qualityMark
 
@@ -253,10 +244,16 @@ def tabuAlghoritm(pancakes):
     return [tabu_pancakes, pancakeSequence]
 
 
-def statistics():
+def statistics(pancakes):
+    experiments_quantity = 10
     first_method_name = "Bruteforce"
     second_method_name = "Hill Climb"
     third_method_name = "Tabu"
+    global PANCAKES_MAX
+    global PANCAKES_MIN
+
+    PANCAKES_MIN = 6
+    PANCAKES_MAX = 7
 
     # clean all files every time we run the program
     brute_file = open(first_method_name + ".txt", "w")
@@ -267,80 +264,117 @@ def statistics():
     hill_file.write("")
 
     startTime = time.time()
+    work_times_tab = []
     quantity_tab = []
     quality_tab = []
+    quality = 0
+    quantity = 0
+    for i in range(experiments_quantity):
+        pancakes = randomiseProblem()
+        PANCAKES_MIN += 1
+        PANCAKES_MAX += 1
 
-    pancakes = randomiseProblem()
-    quantity_to_time_tab = []
-    quality_to_time_tab = []
-    for i in range(25):
-        startTime = time.time()
         brute_force_reference = bruteForce(pancakes)
         pancakes_quantity = len(pancakes)
         pancakes_quality = len(brute_force_reference[1])  # number of flips
+        # pancakes_quality = estimateQuality(simulateFlipping(pancakes, brute_force_reference[0]))
+        workTime = time.time() - startTime
+        quality += pancakes_quality
+        quantity += pancakes_quantity
 
-        quantity_tab.append(pancakes_quantity)
-        quality_tab.append(pancakes_quality)
+        quantity_tab.append(pancakes_quality)
+        quality_tab.append(pancakes_quantity)
+        work_times_tab.append(time.time() - startTime)
 
-    stop_time = time.time() - startTime
-    workTime = stop_time / 25
+        workTime = round(workTime, 6)
+        brute_file = open(first_method_name + ".txt", "a")
+        brute_file.write(first_method_name + " " + str(pancakes_quantity) + " " + str(workTime) + " " + str(pancakes_quality))
 
-    # TODO DOKONCZ
+    plt.plot(work_times_tab, quantity_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quantity")
+    plt.show()
 
-    # todo poprawic i odkomentowac
-    # workTime = round(workTime, 6)
-    # brute_file = open(first_method_name + ".txt", "a")
-    # brute_file.write(first_method_name + " " + str(pancakes_quantity) + " " + str(workTime) + " " + str(pancakes_quality))
+    plt.plot(work_times_tab, quality_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quality")
+    plt.show()
 
-    # draw plots
-    drawPlot(quantity_to_time_tab)
-    drawPlot(quality_to_time_tab)
+    PANCAKES_MIN = 50
+    PANCAKES_MAX = 51
 
+    work_times_tab = []
     quantity_to_time_tab = []
     quality_to_time_tab = []
-    for i in range(25):
-        startTime = time.time()
+    startTime = time.time()
+    for i in range(experiments_quantity):
+        pancakes = randomiseProblem()
+        PANCAKES_MIN += 1
+        PANCAKES_MAX += 1
         hill_climb_reference = climbingAlghoritm(pancakes)
         pancakes_quantity = len(pancakes)
         pancakes_quality = len(hill_climb_reference[1])  # number of flips
+        # pancakes_quality = estimateQuality(simulateFlipping(pancakes, hill_climb_reference[0]))
         workTime = time.time() - startTime
 
         quantity_to_time_tab.append(pancakes_quantity / workTime)
         quality_to_time_tab.append(pancakes_quality / workTime)
+        work_times_tab.append(time.time() - startTime)
 
-        workTime = round(workTime, 6)
         hill_climb_file = open(second_method_name + ".txt", "a")
         hill_climb_file.write(second_method_name + " " + str(pancakes_quantity) + " " + str(workTime) + " " + str(pancakes_quality))
 
     # draw plots
-    drawPlot(quantity_to_time_tab)
-    drawPlot(quality_to_time_tab)
+    plt.plot(work_times_tab, quantity_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quantity")
+    plt.show()
 
+    plt.plot(work_times_tab, quality_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quality")
+    plt.show()
+
+    PANCAKES_MIN = 6
+    PANCAKES_MAX = 7
+
+    work_times_tab = []
     quantity_to_time_tab = []
     quality_to_time_tab = []
-    for i in range(25):
-        startTime = time.time()
+    startTime = time.time()
+    for i in range(experiments_quantity):
+        pancakes = randomiseProblem()
+        PANCAKES_MIN += 1
+        PANCAKES_MAX += 1
         tabu_reference = tabuAlghoritm(pancakes)
         pancakes_quantity = len(pancakes)
         pancakes_quality = len(tabu_reference[1])  # number of flips
+        # pancakes_quality = estimateQuality(simulateFlipping(pancakes, tabu_reference[0]))
         workTime = time.time() - startTime
 
         quantity_to_time_tab.append(pancakes_quantity / workTime)
         quality_to_time_tab.append(pancakes_quality / workTime)
+        work_times_tab.append(time.time() - startTime)
 
-        workTime = round(workTime, 6)
         tabu_file = open(third_method_name + ".txt", "a")
         tabu_file.write(third_method_name + " " + str(pancakes_quantity) + " " + str(workTime) + " " + str(pancakes_quality))
 
     # draw plots
-    drawPlot(quantity_to_time_tab)
-    drawPlot(quality_to_time_tab)
+    plt.plot(work_times_tab, quantity_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quantity")
+    plt.show()
+
+    plt.plot(work_times_tab, quality_tab)
+    plt.xlabel("Time")
+    plt.ylabel("Quality")
+    plt.show()
 
 
-def drawPlot(tab):
-    plt.plot(tab)
-    plt.xlabel("Quality")
-    plt.ylabel("Time")
+def drawPlot(x, y):
+    plt.plot(x, y)
+    plt.xlabel("Time")
+    plt.ylabel("Quality")
     plt.show()
 
 
@@ -390,11 +424,90 @@ def simulateFlipping(pancakes, pancakeSequence):
     return pancakes
 
 
+def one_point_crossing(tournament_winners, starting_population_size, tournament_offsprings_quantity):
+    crossed_population = []
+    for i in range(0, starting_population_size - tournament_offsprings_quantity):  # rebuild population
+        taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+        giver = tournament_winners[random.randrange(0, len(tournament_winners))]
+
+        taker_possibilities = [l for l in range(0, len(taker))]
+        giver_possibilities = [l for l in range(0, len(giver))]
+
+        random_taker_flips_number = random.choice(taker_possibilities)
+        random_giver_flips_number = random.choice(giver_possibilities)
+
+        if random_taker_flips_number == 0:
+            crossed_sequence = taker.copy()
+            crossed_sequence.extend(giver.copy())
+        else:
+            crossed_sequence = taker[0:random_taker_flips_number]
+            crossed_sequence.extend(giver[0:random_giver_flips_number])
+        crossed_population.append(crossed_sequence)
+    return crossed_population
+
+
+def two_point_crossing(tournament_winners, starting_population_size, tournament_offsprings_quantity):
+    starting_population_sequences= []
+    crossed_population = []
+    for i in range(0, starting_population_size - tournament_offsprings_quantity):  # rebuild population
+        # draw one of the tournament_winners as long as it is not bigger than 3
+        # append table with whole pancake flip -> (0) after 20 unsuccessful draws
+        # taker
+        is_proper_length = False
+        counter = 0
+        taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+        if len(taker) >= 3:
+            is_proper_length = True
+        while not is_proper_length:
+            taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+            if len(taker) >= 3:
+                is_proper_length = True
+            elif counter > 20:
+                taker.extend([0, 0, 0])
+                break
+            else:
+                counter += 1
+        # giver
+        is_proper_length = False
+        counter += 1
+        giver = tournament_winners[random.randrange(0, len(tournament_winners))]
+        if len(giver) >= 3:
+            is_proper_length = True
+        while not is_proper_length:
+            giver = tournament_winners[random.randrange(0, len(tournament_winners))]
+            if len(giver) >= 3:
+                is_proper_length = True
+            elif counter > 20:
+                giver.extend([0, 0, 0])
+                break
+            else:
+                counter += 1
+
+        taker_range_first = len(taker) // 3
+        giver_range_second = (len(giver) // 3)
+        taker_range_third = (len(taker) // 3)
+
+        crossed_sequence = taker[0:taker_range_first]
+        zmienna = giver[giver_range_second:giver_range_second * 2]  # TODO zmienna debuggowa, blad to to wewnatrz givera
+        crossed_sequence.extend(zmienna)
+        crossed_sequence.extend(taker[taker_range_third * 2:])
+        starting_population_sequences.append(crossed_sequence)
+    return starting_population_sequences
+
+
+def choose_crossing(crossing_type):
+    if crossing_type == "random":
+        print()
+
+
 def geneticAlghoritm(pancakes):
     generations_number = 1000
-    starting_population_size = 200
-    tournament_offsprings_quantity = 10  # number of groups
-    tournament_offsprings_group_size = 20  # number of people in group
+    starting_population_size = 100000
+    tournament_offsprings_quantity = 100  # number of groups
+    tournament_offsprings_group_size = 1000  # number of people in group
+    mutation_chance = 20  # percentage chance of mutation
+    crossing_type = "twopoint"  # onepoint/twopoint
+    selection_method = "tournament"
     starting_population_sequences = []
     random.seed(time.process_time())
 
@@ -413,54 +526,132 @@ def geneticAlghoritm(pancakes):
         starting_population_sequences.append(single_flip_sequence)
 
     for z in range(generations_number):
-        # tournament method offsprings preparation
-        tournament_offsprings = starting_population_sequences.copy()
-        random.shuffle(tournament_offsprings)
-        tournament_counter = 0
-        tournament_winners = []
-        for i in range(0, tournament_offsprings_group_size):
-            # split all offsprings into groups
-            single_group = []
-            for k in range(0, tournament_offsprings_quantity):
-                single_group.append(tournament_offsprings[tournament_counter])
-                tournament_counter += 1
+        if selection_method == "tournament":
+            # tournament method offsprings preparation
+            tournament_offsprings = starting_population_sequences.copy()
+            random.shuffle(tournament_offsprings)
+            tournament_winners = []
+            tournament_counter = 0
+            for i in range(0, tournament_offsprings_quantity):
+                # split all offsprings into groups
+                single_group = []
+                for k in range(0, tournament_offsprings_group_size):
+                    single_group.append(tournament_offsprings[tournament_counter])
+                    tournament_counter += 1
 
-            # tournament fight
-            group_best = single_group[0]
-            group_best_quality = estimateGeneticQuality(simulateFlipping(pancakes, group_best), group_best)
-            for n in range(len(single_group)):
-                if estimateGeneticQuality(simulateFlipping(pancakes, single_group[n]), single_group[n]) < group_best_quality:
-                    group_best = single_group[n]
-                    group_best_quality = estimateGeneticQuality(simulateFlipping(pancakes, group_best), group_best)
-            tournament_winners.append(group_best)
-
-        for i in range(len(tournament_winners)):  # leave function if one of the tournament winners is an answer
-            if estimateGeneticQuality(simulateFlipping(pancakes, tournament_winners[i]), tournament_winners[i]) <= 0:
-                return [simulateFlipping(pancakes, tournament_winners[i]), tournament_winners[i]]
-
-        starting_population_sequences = tournament_winners.copy()  # empty the list and add tournament winners to it
+                # tournament fight
+                group_best = single_group[0]
+                group_best_quality = estimateGeneticQuality(pancakes, group_best)
+                for n in range(len(single_group)):
+                    if estimateGeneticQuality(pancakes, single_group[n]) < group_best_quality:
+                        group_best = single_group[n]
+                        group_best_quality = estimateGeneticQuality(pancakes, group_best)
+                tournament_winners.append(group_best)
+            for i in range(len(tournament_winners)):  # leave function if one of the tournament winners is an answer
+                if estimateGeneticQuality(pancakes, tournament_winners[i]) <= 0:
+                    return [simulateFlipping(pancakes, tournament_winners[i]), tournament_winners[i]]
+            starting_population_sequences = tournament_winners.copy()  # empty the list and add tournament winners to it
         # crossing
-        for i in range(0, starting_population_size - tournament_offsprings_quantity):  # rebuild population
-            taker = tournament_winners[random.randrange(0, len(tournament_winners))]
-            giver = tournament_winners[random.randrange(0, len(tournament_winners))]
 
-            taker_possibilities = [l for l in range(0, len(taker))]
-            giver_possibilities = [l for l in range(0, len(giver))]
+        # one point crossing
+        if crossing_type == "onepoint":
+            crossed_population = []
+            for i in range(0, (starting_population_size - tournament_offsprings_quantity)//2):  # rebuild population
+                taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+                giver = tournament_winners[random.randrange(0, len(tournament_winners))]
 
-            random_taker_flips_number = random.choice(taker_possibilities)
-            random_giver_flips_number = random.choice(giver_possibilities)
+                taker_possibilities = [l for l in range(0, len(taker))]
+                giver_possibilities = [l for l in range(0, len(giver))]
 
-            if random_taker_flips_number == 0:
-                crossed_sequence = taker.copy()
-                crossed_sequence.extend(giver.copy())
-            else:
-                crossed_sequence = taker[0:random_taker_flips_number]
-                crossed_sequence.extend(giver[0:random_giver_flips_number])
-            starting_population_sequences.append(crossed_sequence)
+                random_taker_flips_number = random.choice(taker_possibilities)
+                random_giver_flips_number = random.choice(giver_possibilities)
+
+                if random_taker_flips_number == 0 and random_giver_flips_number != 0:
+                    crossed_sequence1 = []
+                    crossed_sequence2 = []
+                    crossed_sequence1.append(taker[0])
+                    crossed_sequence1.extend(giver[0:random_giver_flips_number])
+                    crossed_sequence2.extend(giver[random_giver_flips_number:])
+                    temp_taker = []
+                    temp_taker.append(taker[0])
+                    crossed_sequence2.extend(temp_taker)
+                elif random_taker_flips_number == 0 and random_giver_flips_number == 0:
+                    crossed_sequence1 = []
+                    crossed_sequence2 = []
+                    temp_giver = []
+                    temp_giver.append(giver[0])
+                    crossed_sequence1.append(taker[0])
+                    crossed_sequence1.extend(temp_giver)
+                    temp_taker = []
+                    temp_taker.append(taker[0])
+                    crossed_sequence2.append(giver[0])
+                    crossed_sequence2.extend(temp_taker)
+                else:
+                    crossed_sequence1 = taker[0:random_taker_flips_number]
+                    crossed_sequence1.extend(giver[0:random_giver_flips_number])
+                    crossed_sequence2 = taker[random_taker_flips_number:]
+                    crossed_sequence2.extend(giver[random_giver_flips_number:])
+                starting_population_sequences.append(crossed_sequence1)
+                starting_population_sequences.append(crossed_sequence2)
+        # two point crossing
+        elif crossing_type == "twopoint":
+            crossed_population = []
+            for i in range(0, (starting_population_size - tournament_offsprings_quantity)//2):  # rebuild population
+                # draw one of the tournament_winners as long as it is not bigger than 3
+                # append table with whole pancake flip -> (0) after 20 unsuccessful draws
+                # taker
+                is_proper_length = False
+                counter = 0
+                taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+                if len(taker) >= 3:
+                    is_proper_length = True
+                while not is_proper_length:
+                    taker = tournament_winners[random.randrange(0, len(tournament_winners))]
+                    if len(taker) >= 3:
+                        is_proper_length = True
+                    elif counter > len(tournament_winners):
+                        taker.extend([random.randrange(0, len(pancakes)), random.randrange(0, len(pancakes))])
+                        break
+                    else:
+                        counter += 1
+                # giver
+                is_proper_length = False
+                counter += 1
+                giver = tournament_winners[random.randrange(0, len(tournament_winners))]
+                if len(giver) >= 3:
+                    is_proper_length = True
+                while not is_proper_length:
+                    giver = tournament_winners[random.randrange(0, len(tournament_winners))]
+                    if len(giver) >= 3:
+                        is_proper_length = True
+                    elif counter > len(tournament_winners):
+                        giver.extend([random.randrange(0, len(pancakes)), random.randrange(0, len(pancakes))])
+                        break
+                    else:
+                        counter += 1
+
+                taker_range_first = len(taker) // 3
+                giver_range_second = (len(giver) // 3)
+                taker_range_third = (len(taker) // 3)
+
+                crossed_sequence1 = taker[0:taker_range_first]
+                zmienna1 = giver[
+                          giver_range_second:giver_range_second * 2]
+                crossed_sequence1.extend(zmienna1)
+                crossed_sequence1.extend(taker[taker_range_third * 2:])
+
+                crossed_sequence2 = giver[0:giver_range_second]
+                zmienna2 = taker[
+                          taker_range_first:taker_range_first * 2]
+                crossed_sequence2.extend(zmienna2)
+                crossed_sequence2.extend(giver[giver_range_second * 2:])
+
+                starting_population_sequences.append(crossed_sequence1)
+                starting_population_sequences.append(crossed_sequence2)
 
         # mutation
         random_mutation_chance = random.randrange(0, 100)
-        if random_mutation_chance < 10:
+        if random_mutation_chance < mutation_chance:
             random_mutation_position = random.randrange(0, len(starting_population_sequences))
 
             single_flip_sequence = []
@@ -476,10 +667,9 @@ def geneticAlghoritm(pancakes):
             starting_population_sequences.append(single_flip_sequence)
 
             starting_population_sequences[random_mutation_position] = single_flip_sequence
-
         # check for an answer
         for i in range(len(starting_population_sequences)):  # leave function if one of the next generation is an answer
-            if estimateGeneticQuality(simulateFlipping(pancakes, starting_population_sequences[i]), starting_population_sequences[i]) <= 0:
+            if estimateGeneticQuality(pancakes, starting_population_sequences[i]) <= 0:
                 return [simulateFlipping(pancakes, starting_population_sequences[i]), starting_population_sequences[i]]
 
     print("Alghoritm wasnt able to solve this problem")
@@ -497,19 +687,23 @@ def main():
     startTime = time.time()
     # pancakes = randomiseSolution(pancakes)
     printSolution(pancakes)
-    pancake_reference = bruteForce(pancakes)
-    # pancake_reference = climbingAlghoritm(pancakes)
+
+    # statistics(pancakes)
+
+    # pancake_reference = bruteForce(pancakes)
+    # pancaske_reference = climbingAlghoritm(pancakes)
     # pancake_reference = climbingAlghoritm_ver2(pancakes)
     # pancake_reference = tabuAlghoritm(pancakes)
     # pancake_reference = simmannealing(pancakes)
     pancake_reference = geneticAlghoritm(pancakes)
-    pancakes = pancake_reference[0]
+    pancakeSequence = pancake_reference[1]  # debug
     print(pancake_reference[1])
+    print(estimateGeneticQuality(pancakes, pancake_reference[1]))  # debug
+    pancakes = pancake_reference[0]
 
-    # statistics()
-    # pyqt_pancakes.print_pancakes(pancakes)
+    # pyqt_pancakes.print_pancakes(pancakes, pancakeSequence)
 
-    workTime = round(time.time() - startTime, 6)  # work time of alghoritm, rounded to 6 decimal places
+    workTime = round(time.time() - startTime)  # work time of alghoritm, rounded to 6 decimal places
     printSolution(pancakes)
     writeFile(fileOutput, startingPancakes, pancakes, workTime)
 
