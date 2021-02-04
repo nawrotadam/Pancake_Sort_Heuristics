@@ -501,7 +501,8 @@ def choose_crossing(crossing_type):
 
 
 def geneticAlghoritm(pancakes):
-    generations_number = 1000
+    # pancakes = [1, 2, 5, 7, 8, 9, 6, 4, 3]
+    generations_number = 100
     starting_population_size = 100000
     tournament_offsprings_quantity = 100  # number of groups
     tournament_offsprings_group_size = 1000  # number of people in group
